@@ -8,6 +8,7 @@ use \Config;
 abstract class AbstractController {
 
 	protected $config;
+	protected $view;
 
 	public function __construct() {
 		$this->init();
@@ -16,7 +17,6 @@ abstract class AbstractController {
 
 	private function init() {
 		$this->config = new Config(Helper::parseConfig(CONFIG_PATH));
-		// echo '<pre>'.var_export($this->config->get('database.dbname'), true).'</pre>';die();
 	}
 
 	private function postDispatch() {
@@ -25,5 +25,26 @@ abstract class AbstractController {
 		} else {
 			$this->render();
 		}
+	}
+
+
+	private function render() {
+		$this->view = $this->getView();
+		echo $this->view->getContent();
+	}
+
+	private function getView() {
+		$backtrace = debug_backtrace();
+		$view = null;
+		$name = end(explode(BACKSLASH, get_class($this)));
+		try {
+			if (class_exists('view'.BACKSLASH.$name)) {
+				$className = 'view'.BACKSLASH.$name;
+				$view = new $className();
+			}
+		} catch (Exception $e) {
+			// the view class could not be found
+		}
+		return $view;
 	}
 }

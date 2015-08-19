@@ -8,13 +8,17 @@ if (!defined('CONFIG_PATH')) {
 	define('CONFIG_PATH', APPLICATION_PATH.'/config/application.ini');
 }
 
+if (!defined('BACKSLASH')) {
+	define('BACKSLASH', '\\');
+}
 
-require_once 'Autoloader.php';
-spl_autoload_register(array('Autoloader', 'load'));
 
 foreach (glob('lib/*.php') as $filename) {
 	include $filename;
 }
 
-use controller\Index;
-new Index();
+require_once 'Autoloader.php';
+spl_autoload_register(array('Autoloader', 'load'));
+
+
+new controller\Index();
