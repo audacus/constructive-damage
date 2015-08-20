@@ -2,6 +2,8 @@
 
 namespace view;
 
+use \Helper;
+use \Config;
 use controller\AbstractController;
 
 class AbstractView {
@@ -11,19 +13,28 @@ class AbstractView {
 	const DEFAULT_SCRIPT_HEADER = 'header.php';
 	const DEFAULT_SCRIPT_FOOTER = 'footer.php';
 
+	protected $config;
 	protected $header;
 	protected $content;
 	protected $footer;
 	protected $data;
 
 	public function __construct() {
+		$this->config = new Config(Helper::parseConfig(CONFIG_PATH));
 		$this->header = $this->setHeader();
 		$this->footer = $this->setFooter();
 		$this->content = $this->setContent();
 	}
 
 	public function getContent() {
-		return file_get_contents($this->header).file_get_contents($this->content).file_get_contents($this->footer);
+		$content = null;
+		ob_start();
+		include_once($this->header);
+		include_once($this->content);
+		include_once($this->footer);
+		$content = ob_get_contents();
+		ob_end_clean();
+		return $content;
 	}
 
 	public function getData() {

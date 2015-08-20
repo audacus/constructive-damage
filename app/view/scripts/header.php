@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title><?php die(var_dump($this)); ?></title>
+	<title><?php echo $this->config->get('app.name'); ?></title>
 	<link rel="stylesheet" href="">
 </head>
 <body>

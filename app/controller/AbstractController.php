@@ -23,12 +23,12 @@ abstract class AbstractController {
 		if (\Helper::isAjax()) {
 			// if ajax
 		} else {
-			$this->render();
+			$this->renderView();
 		}
 	}
 
 
-	private function render() {
+	private function renderView() {
 		$this->view = $this->getView();
 		echo $this->view->getContent();
 	}
