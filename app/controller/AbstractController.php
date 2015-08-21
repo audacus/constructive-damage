@@ -16,7 +16,7 @@ abstract class AbstractController {
 	}
 
 	private function init() {
-		$this->config = new Config(Helper::parseConfig(CONFIG_PATH));
+		$this->config = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
 	}
 
 	private function postDispatch() {
