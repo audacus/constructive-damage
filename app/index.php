@@ -4,8 +4,12 @@ if (!defined('APPLICATION_PATH')) {
 	define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../app'));
 }
 
+if (!defined('DEFAULT_CONFIG_PATH')) {
+	define('DEFAULT_CONFIG_PATH', APPLICATION_PATH.'/config/default/application.json');
+}
+
 if (!defined('CONFIG_PATH')) {
-	define('CONFIG_PATH', APPLICATION_PATH.'/config/application.ini');
+	define('CONFIG_PATH', APPLICATION_PATH.'/config/application.json');
 }
 
 if (!defined('BACKSLASH')) {
