@@ -1,11 +1,14 @@
 {
 	"app": {
-		"name":"some application"
+		"name": "some application"
 	},
-	"database" : {
-		"host":"localhost",
-		"username":"root",
-		"password":"",
-		"dbname":""
+	"db": {
+		"host": "localhost",
+		"user": "root",
+		"password": "",
+		"name": "",
+		"pdo": {
+			"type": "mysql"
+		}
 	}
 }
