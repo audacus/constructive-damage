@@ -20,7 +20,7 @@ class AbstractView {
 	protected $data;
 
 	public function __construct() {
-		$this->config = new Config(Helper::parseConfig(CONFIG_PATH));
+		$this->config = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
 		$this->header = $this->setHeader();
 		$this->footer = $this->setFooter();
 		$this->content = $this->setContent();
