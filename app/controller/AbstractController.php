@@ -4,6 +4,7 @@ namespace controller;
 
 use \Helper;
 use \Config;
+use \Database;
 
 abstract class AbstractController {
 
@@ -36,10 +37,10 @@ abstract class AbstractController {
 	private function getView() {
 		$backtrace = debug_backtrace();
 		$view = null;
-		$name = end(explode(BACKSLASH, get_class($this)));
+		$name = end(explode('\\', get_class($this)));
 		try {
-			if (class_exists('view'.BACKSLASH.$name)) {
-				$className = 'view'.BACKSLASH.$name;
+			if (class_exists('view\\'.$name)) {
+				$className = 'view\\'.$name;
 				$view = new $className();
 			}
 		} catch (Exception $e) {

@@ -73,7 +73,7 @@ class AbstractView {
 			$contentPathParts = array(
 				dirname(__FILE__),
 				self::SCRIPTS_PATH,
-				strtolower(end(explode(BACKSLASH, get_class($this)))),
+				strtolower(end(explode('\\', get_class($this)))),
 				self::DEFAULT_SCRIPT
 			);
 			$this->content = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $contentPathParts));
