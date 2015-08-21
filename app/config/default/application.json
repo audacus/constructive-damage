@@ -1,0 +1,11 @@
+{
+	"app": {
+		"name":"some application"
+	},
+	"database" : {
+		"host":"localhost",
+		"username":"root",
+		"password":"",
+		"dbname":""
+	}
+}
