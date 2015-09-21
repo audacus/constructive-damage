@@ -5,9 +5,11 @@ namespace controller;
 use \Helper;
 use \Config;
 use \Database;
+use \exception\ViewNotFoundException;
 
 abstract class AbstractController {
 
+	const VIEW_PREFIX = 'view\\';
 	protected $config;
 	protected $view;
 
@@ -39,12 +41,12 @@ abstract class AbstractController {
 		$view = null;
 		$name = end(explode('\\', get_class($this)));
 		try {
-			if (class_exists('view\\'.$name)) {
-				$className = 'view\\'.$name;
+			if (class_exists(self::VIEW_PREFIX.$name)) {
+				$className = self::VIEW_PREFIX.$name;
 				$view = new $className();
 			}
 		} catch (Exception $e) {
-			// the view class could not be found
+			// throw new ViewNotFoundException(self::VIEW_PREFIX.$name);
 		}
 		return $view;
 	}

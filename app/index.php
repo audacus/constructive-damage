@@ -12,11 +12,11 @@ if (!defined('CONFIG_PATH')) {
 	define('CONFIG_PATH', APPLICATION_PATH.'/config/application.json');
 }
 
+// add lib folder to include path
 set_include_path(implode(PATH_SEPARATOR, array(
 	realpath(APPLICATION_PATH.'/lib'),
 	get_include_path()
 )));
-
 
 // include all files in the lib folder
 foreach (glob('lib/*.php') as $filename) {
@@ -36,4 +36,4 @@ spl_autoload_register(array('Autoloader', 'load'));
 require_once 'notorm/NotORM.php';
 
 // start application
-new controller\Index();
+new App();

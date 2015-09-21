@@ -9,7 +9,7 @@ use controller\AbstractController;
 class AbstractView {
 
 	const SCRIPTS_PATH = 'scripts';
-	const DEFAULT_SCRIPT = 'index.php';
+	const DEFAULT_SCRIPT_CONTENT = 'content.php';
 	const DEFAULT_SCRIPT_HEADER = 'header.php';
 	const DEFAULT_SCRIPT_FOOTER = 'footer.php';
 
@@ -74,7 +74,7 @@ class AbstractView {
 				dirname(__FILE__),
 				self::SCRIPTS_PATH,
 				strtolower(end(explode('\\', get_class($this)))),
-				self::DEFAULT_SCRIPT
+				self::DEFAULT_SCRIPT_CONTENT
 			);
 			$this->content = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $contentPathParts));
 		}
