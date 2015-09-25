@@ -27,10 +27,10 @@ foreach (glob('lib/*.php') as $filename) {
 require_once 'Autoloader.php';
 spl_autoload_register(array('Autoloader', 'load'));
 
-// // initialize error handler
-// require_once 'ErrorHandler.php';
-// set_error_handler('ErrorHandler::error');
-// set_exception_handler('ErrorHandler::exception');
+// initialize error controller
+require_once 'ErrorHandler.php';
+set_error_handler('controller\ErrorController::error');
+set_exception_handler('controller\ErrorController::exception');
 
 // include NotORM
 require_once 'notorm/NotORM.php';

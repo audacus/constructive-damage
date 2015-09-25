@@ -40,13 +40,11 @@ abstract class AbstractController {
 		$backtrace = debug_backtrace();
 		$view = null;
 		$name = end(explode('\\', get_class($this)));
+		$className = self::VIEW_PREFIX.$name;
 		try {
-			if (class_exists(self::VIEW_PREFIX.$name)) {
-				$className = self::VIEW_PREFIX.$name;
-				$view = new $className();
-			}
-		} catch (Exception $e) {
-			// throw new ViewNotFoundException(self::VIEW_PREFIX.$name);
+			$view = new $className();
+		} catch (\Exception $e) {
+			throw new ViewNotFoundException($e->getMessage());
 		}
 		return $view;
 	}
