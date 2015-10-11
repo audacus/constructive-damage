@@ -1,5 +1,6 @@
 <?php
 
+use \Helper;
 use exception\ControllerNotFoundException;
 use exception\ClassMethodNotFoundException;
 use exception\ViewNotFoundException;

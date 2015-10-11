@@ -17,4 +17,8 @@ class Helper {
 		}
 		return array_replace_recursive($defaultConfig, $config);
 	}
+
+	public static function isCssCall() {
+		return !empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'text/css') !== false;
+	}
 }

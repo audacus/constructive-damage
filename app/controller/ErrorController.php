@@ -8,7 +8,7 @@ use exception\ViewNotFoundException;
 class ErrorController extends \ErrorHandler {
 
 	public static function exception(\Exception $e) {
-		echo get_class($e).'<br />';
+		// echo get_class($e).'<br />';
 
 		if ($e->getCode() !== 0 && !(error_reporting() & $e->getCode())) {
 			// This error code is not included in error_reporting

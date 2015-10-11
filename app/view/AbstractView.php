@@ -26,15 +26,15 @@ class AbstractView {
 		$this->content = $this->setContent();
 	}
 
-	public function getContent() {
-		$content = null;
+	public function getSiteContent() {
+		$siteContent = null;
 		ob_start();
 		include_once($this->header);
 		include_once($this->content);
 		include_once($this->footer);
-		$content = ob_get_contents();
+		$siteContent = ob_get_contents();
 		ob_end_clean();
-		return $content;
+		return $siteContent;
 	}
 
 	public function getData() {

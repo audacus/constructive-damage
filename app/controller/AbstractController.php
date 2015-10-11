@@ -4,8 +4,8 @@ namespace controller;
 
 use \Helper;
 use \Config;
-use \Database;
-use \exception\ViewNotFoundException;
+use \Language;
+use \exception\ViewNotFounException;
 
 abstract class AbstractController {
 
@@ -22,29 +22,36 @@ abstract class AbstractController {
 
 	public function __construct() {
 		$this->init();
-		// $this->postDispatch();
 	}
 
 	private function init() {
 		$this->config = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
+		$this->language = new Language();
 	}
 
 	public function dispatch($returnValue = null) {
-		if (empty($returnValue)) {
-			$this->renderView();
+		if (Helper::isAjax()) {
+			if (empty($returnValue)) {
+			} else {
+				echo $returnValue;
+			}
 		} else {
-			echo $this->formatValue($returnValue);
-		}
-		if (\Helper::isAjax()) {
-			// if ajax
-		} else {
+			if (empty($returnValue)) {
+				$this->renderView();
+			} else {
+				echo $this->formatValue($returnValue);
+			}
 		}
 	}
 
+	public function putLanguage($language) {
+		// change language (cookie?)
+		$this->language->setLanguage($language);
+	}
 
 	private function renderView() {
 		$this->view = $this->getView();
-		echo $this->view->getContent();
+		echo $this->view->getSiteContent();
 	}
 
 	private function getView() {
@@ -90,6 +97,6 @@ abstract class AbstractController {
 	}
 
 	private function formatXml(&$value) {
-		return $value = 'XML not yet supported.<br />'.$value;
+		return $value = 'XML not yet supported.<br />'.print_r($value, true);
 	}
 }
