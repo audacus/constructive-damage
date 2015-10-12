@@ -38,12 +38,21 @@ class AbstractView {
 	}
 
 	public function getData() {
+		if (is_null($this->data)) {
+			$this->setData(array());
+		}
 		return $this->data;
 	}
 
 	public function setData($data) {
 		$this->data = $data;
-		return $this->data;
+		return $this->getData();
+	}
+
+	public function appendData($data) {
+		$this->setData($this->getData());
+		array_push($this->data, $data);
+		return $this->getData();
 	}
 
 	private function setHeader() {

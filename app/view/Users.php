@@ -4,6 +4,6 @@ namespace view;
 
 use view\AbstractView;
 
-class User extends AbstractView {
+class Users extends AbstractView {
 
 }
