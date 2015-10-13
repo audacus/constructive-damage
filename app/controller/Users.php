@@ -12,7 +12,6 @@ class Users extends AbstractController {
 
 
 	public function get($id = null) {
-		// echo '<pre>'.print_r(func_get_args(),1).'</pre>';die();
 		$users = array(
 			array(
 				'name' => 'david',
@@ -45,7 +44,7 @@ class Users extends AbstractController {
 	}
 
 	public function post($data = array()) {
-
+		echo '<pre>'.print_r(func_get_args(),1).'</pre>';die();
 	}
 
 	public function put($data = array()) {

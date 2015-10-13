@@ -12,6 +12,7 @@
 			url: document.getElementById('url').value,
 			data: (document.getElementById('data').value ? JSON.parse(document.getElementById('data').value) : null),
 			success: function(request, parameters) {
+				console.log(JSON.parse(request.responseText));
 				document.getElementById('result').innerHTML = request.responseText;
 			},
 			failure: function() {

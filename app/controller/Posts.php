@@ -17,7 +17,7 @@ class Posts extends AbstractController {
 				'content' => 'i got dis fiiileng',
 			),
 			array(
-				'id' => 45,
+				'id' => 33,
 				'user' => 10,
 				'content' => '\'; drop database; -- ',
 			),
@@ -27,12 +27,12 @@ class Posts extends AbstractController {
 				'content' => '£¨ü¨.-¨ü.-¨ü-¨ü-¨ü134970192348/)=&()ç%&+?*(/?ç+',
 			),
 			array(
-				'id' => 45,
+				'id' => 60,
 				'user' => 10,
 				'content' => 'echo $post',
 			),
 			array(
-				'id' => 120,
+				'id' => 111,
 				'user' => 12,
 				'content' => 'Some post.',
 			),
