@@ -4,7 +4,7 @@ namespace controller;
 
 class Posts extends AbstractController {
 
-	public function get($id = null, $user = null) {
+	public function get($id = null, $user = array()) {
 		$posts = array(
 			array(
 				'id' => 2,
@@ -61,5 +61,11 @@ class Posts extends AbstractController {
 			$posts = $result;
 		}
 		return $posts;
+	}
+
+	public function post($user = array(), array $data = array()) {
+		echo '<pre>'.print_r(func_get_args(),1).'</pre>';die();
+		// add post for given user
+
 	}
 }

@@ -1,5 +1,18 @@
+.footer {
+	position: absolute;
+	bottom: 0px;
+}
+
 .copyright {
 	font-family: sans-serif;
 	font-size: 70%;
 	color: #B4B4B4;
+}
+
+.form-register {
+	width: 150px;
+}
+
+.form-register * {
+	width: 100%;
 }

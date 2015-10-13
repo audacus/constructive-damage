@@ -4,7 +4,7 @@ namespace controller;
 
 class Comments extends AbstractController {
 
-	public function get($id = null, $post = null) {
+	public function get($id = null, $post = array()) {
 		$comments = array(
 			array(
 				'id' => 3,
@@ -39,7 +39,7 @@ class Comments extends AbstractController {
 			array(
 				'id' => 99,
 				'post' => 60,
-				'text' => 'to the winnndooooooowwwww \(._.\)<br />to the waallll (/._.)/',
+				'text' => 'to the winnndooooooowwwww \(._.\) to the waallll (/._.)/',
 			)
 		);
 		if (!empty($post)) {

@@ -6,7 +6,7 @@ use \Helper;
 use \Config;
 use controller\AbstractController;
 
-class AbstractView {
+abstract class AbstractView {
 
 	const SCRIPTS_PATH = 'scripts';
 	const DEFAULT_SCRIPT_CONTENT = 'content.php';

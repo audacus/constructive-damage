@@ -41,10 +41,13 @@ function ajax() {
 			request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			request.send();
 			break;
-		default:
-			// post, put
+		case 'post':
+		case 'put':
 			request.setRequestHeader('Content-Type', 'application/json');
 			request.send(JSON.stringify(parameters.data));
+			break;
+		default:
+			// do nothing
 			break;
 	}
 

@@ -8,14 +8,22 @@ use exception\ViewNotFoundException;
 class Rest {
 
 	const DEFAULT_CONTROLLER = 'index';
-	const DEFAULT_METHOD = 'get';
 	const CONTROLLER_PREFIX = 'controller\\';
+	const METHOD_GET = 'get';
+	const METHOD_POST = 'post';
+	const METHOD_DELETE = 'delete';
+	const METHOD_PUT = 'put';
+	const METHOD_PATH = 'patch';
+	const DEFAULT_METHOD = self::METHOD_GET;
 	const FORMAT_JSON = 'json';
 	const FORMAT_XML = 'xml';
 	const DEFAULT_FORMAT = self::FORMAT_JSON;
 
 	private $request;
 	private $controller;
+	private $methods = array(
+
+	);
 	private $formats = array(
 		self::FORMAT_JSON,
 		self::FORMAT_XML
@@ -25,11 +33,10 @@ class Rest {
 		require_once 'RestRequest.php';
 		$this->request = new RestRequest();
 		$urlElements = $this->request->getUrlElements();
-
 		echo $this->dispatch($this->processParams($urlElements));
 	}
 
-	private function processParams(&$urlParams, $previousReturnValue = null) {
+	private function processParams(array &$urlParams, $previousReturnValue = null) {
 		// controller
 		$controllerName = self::DEFAULT_CONTROLLER;
 		if (isset($urlParams[0])) {
@@ -64,10 +71,49 @@ class Rest {
 		// process
 		$returnValue = null;
 		if (method_exists($this->controller, $controllerMethod)) {
-			if (!empty($previousReturnValue)) {
-				$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $previousReturnValue);
-			} else {
-				$returnValue = $this->controller->$controllerMethod($controllerMethodParam);
+			switch ($controllerMethod) {
+				case self::METHOD_GET:
+				case self::METHOD_DELETE:
+					if (!empty($previousReturnValue)) {
+						$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $previousReturnValue);
+					} else {
+						$returnValue = $this->controller->$controllerMethod($controllerMethodParam);
+					}
+					break;
+				case self::METHOD_POST:
+					$bodyParams = $this->request->getParameters();
+					if (!empty($previousReturnValue)) {
+						if (!empty($bodyParams)) {
+							$returnValue = $this->controller->$controllerMethod($previousReturnValue, $bodyParams);
+						} else {
+							$returnValue = $this->controller->$controllerMethod($previousReturnValue);
+						}
+					} else {
+						if (!empty($bodyParams)) {
+							$returnValue = $this->controller->$controllerMethod($bodyParams);
+						} else {
+							$returnValue = $this->controller->$controllerMethod();
+						}
+					}
+					break;
+				case self::METHOD_PUT:
+				case self::METHOD_PATCH:
+				default:
+					$bodyParams = $this->request->getParameters();
+					if (!empty($previousReturnValue)) {
+						if (!empty($bodyParams)) {
+							$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $previousReturnValue, $bodyParams);
+						} else {
+							$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $previousReturnValue);
+						}
+					} else {
+						if (!empty($bodyParams)) {
+							$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $bodyParams);
+						} else {
+							$returnValue = $this->controller->$controllerMethod($controllerMethodParam);
+						}
+					}
+					break;
 			}
 		} else {
 			throw new ClassMethodNotFoundException($this->controller, $controllerMethod);

@@ -2,7 +2,7 @@
 <input id="method" placeholder="method" /></br />
 <input id="url" placeholder="url" /></br />
 <input id="data" placeholder="data" /></br />
-<button onclick="sendAjax()" style="width: 100px">get name</button><br />
+<button onclick="sendAjax()" style="width: 100px">send ajax</button><br />
 <span id="result">result</span>
 <script type="text/javascript">
 
@@ -12,7 +12,6 @@
 			url: document.getElementById('url').value,
 			data: (document.getElementById('data').value ? JSON.parse(document.getElementById('data').value) : null),
 			success: function(request, parameters) {
-				console.log(JSON.parse(request.responseText));
 				document.getElementById('result').innerHTML = request.responseText;
 			},
 			failure: function() {

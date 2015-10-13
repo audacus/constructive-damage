@@ -4,6 +4,7 @@ namespace controller;
 
 use \Helper;
 use \Config;
+use \Database;
 use \Language;
 use \exception\ViewNotFoundException;
 
@@ -17,6 +18,8 @@ abstract class AbstractController {
 	public function __construct() {
 		$this->init();
 	}
+
+	public abstract function get();
 
 	private function init() {
 		$this->config = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
