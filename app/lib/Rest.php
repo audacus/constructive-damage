@@ -8,24 +8,36 @@ use exception\ViewNotFoundException;
 class Rest {
 
 	const DEFAULT_CONTROLLER = 'index';
-	const DEFAULT_ACTION = 'index';
+	const DEFAULT_METHOD = 'get';
 	const CONTROLLER_PREFIX = 'controller\\';
+	const FORMAT_JSON = 'json';
+	const FORMAT_XML = 'xml';
+	const DEFAULT_FORMAT = self::FORMAT_JSON;
+
+	private $request;
+	private $controller;
+	private $formats = array(
+		self::FORMAT_JSON,
+		self::FORMAT_XML
+	);
 
 	public function __construct() {
 		require_once 'RestRequest.php';
-		$request = new RestRequest();
-		$urlElements = $request->getUrlElements();
-		$controllerName = self::DEFAULT_CONTROLLER;
-		$controller = null;
-		$controllerMethodName = strtolower($request->getVerb());
-		$controllerMethodParams = array_slice($urlElements, 1);
-		if (isset($urlElements[0])) {
-			$controllerName = $urlElements[0];
-		}
+		$this->request = new RestRequest();
+		$urlElements = $this->request->getUrlElements();
 
+		echo $this->dispatch($this->processParams($urlElements));
+	}
+
+	private function processParams(&$urlParams, $previousReturnValue = null) {
+		// controller
+		$controllerName = self::DEFAULT_CONTROLLER;
+		if (isset($urlParams[0])) {
+			$controllerName = $urlParams[0];
+		}
 		$controllerClassName = $this->getControllerClassName($controllerName);
 		try {
-			$controller = new $controllerClassName();
+			$this->controller = new $controllerClassName();
 		} catch (\Exception $e) {
 			if ($e instanceof ViewNotFoundException) {
 				throw $e;
@@ -36,44 +48,86 @@ class Rest {
 			}
 		}
 
+		// method
+		if (count($urlParams) > 2) {
+			$controllerMethod = self::DEFAULT_METHOD;
+		} else {
+			$controllerMethod = strtolower($this->request->getVerb());
+		}
 
-		// controller/id/controller/id
+		// param
+		$controllerMethodParam = null;
+		if (isset($urlParams[1])) {
+			$controllerMethodParam = $urlParams[1];
+		}
 
-		// GET users/12/posts/42:
-		// post 42 of user 12
-		// always loop through parameters:
-		// 1. GET users/12 -> controller\Users::get(12)
-		// 2. GET posts/42 -> controller\Posts::get(user, 42)
-
-		// GET users/12/posts:
-		// all posts of user 12
-		// 1. GET users/12 -> user = controller\Users::get(12)
-		// 2. GET posts/42 -> controller\Posts::get(user, null)
-
-		// POST users/12/posts:
-		// create new posts for user 12
-		// 1. GET users/12 -> user = controller\Users::get(12)
-		// 2. POST posts -> controller\Posts::post(user, post)
-
-		if (!empty($controllerMethodParams)) {
-			// $controllerMethodName .= ucfirst(strtolower(array_shift($controllerMethodParams)));
-			if (method_exists($controller, $controllerMethodName)) {
-				// echo $controller->dispatch($controller->$controllerMethodName(array_merge($controllerMethodParams, $request->getParameters())));
-				if (count($controllerMethodParams) === 1) {
-					$controllerMethodParams = current($controllerMethodParams);
-				}
-				echo $controller->dispatch($controller->$controllerMethodName($controllerMethodParams));
+		// process
+		$returnValue = null;
+		if (method_exists($this->controller, $controllerMethod)) {
+			if (!empty($previousReturnValue)) {
+				$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $previousReturnValue);
 			} else {
-				throw new ClassMethodNotFoundException($controller, $controllerMethodName);
+				$returnValue = $this->controller->$controllerMethod($controllerMethodParam);
 			}
 		} else {
-			if (method_exists($controller, self::DEFAULT_ACTION)) {
-				$controllerMethodName = self::DEFAULT_ACTION;
-				echo $controller->dispatch($controller->$controllerMethodName());
+			throw new ClassMethodNotFoundException($this->controller, $controllerMethod);
+		}
+
+		// prepare for next loop
+		$urlParams = array_slice($urlParams, 2);
+		if (!empty($urlParams)) {
+			$returnValue = $this->processParams($urlParams, $returnValue);
+		}
+		return $returnValue;
+	}
+
+	private function dispatch($value = null) {
+		$returnValue = null;
+		if (Helper::isAjax()) {
+			$returnValue = $this->formatJson($value);
+		} else {
+			if (is_null($value)) {
+				$this->controller->renderView();
 			} else {
-				$controller->dispatch();
+				$returnValue = $this->formatValue($value);
 			}
 		}
+		return $returnValue;
+	}
+
+	private function formatValue(&$value) {
+		$format = self::DEFAULT_FORMAT;
+		if (isset($_REQUEST['format']) && in_array($_REQUEST['format'], $this->formats)) {
+			$format = $_REQUEST['format'];
+		} else {
+			foreach (array_keys($_REQUEST) as $param) {
+				if (in_array($param, $this->formats)) {
+					$format = $param;
+				}
+			}
+		}
+		switch ($format) {
+			case self::FORMAT_JSON:
+				$this->formatJson($value);
+				break;
+			case self::FORMAT_XML:
+				$this->formatXml($value);
+				break;
+			default:
+				// do nothing
+				break;
+		}
+		return $value;
+	}
+
+	private function formatJson(&$value) {
+		header('Content-Type: application/json');
+		return $value = json_encode($value);
+	}
+
+	private function formatXml(&$value) {
+		header('Content-Type: text/xml');
+		return $value = 'XML not yet supported.<br />'.print_r($value, true);
 	}
 
 	private function getControllerClassName($controller) {

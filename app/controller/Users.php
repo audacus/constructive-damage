@@ -6,17 +6,40 @@ use controller\AbstractController;
 
 class Users extends AbstractController {
 
+	public function index() {
+		die('index function');
+	}
+
 
 	public function get($id = null) {
-		echo '<pre>'.print_r(func_get_args(),1).'</pre>';die();
+		// echo '<pre>'.print_r(func_get_args(),1).'</pre>';die();
 		$users = array(
-			1 => 'david',
-			4 => 'thomas',
-			10 => 'severin',
-			12 => 'john'
+			array(
+				'name' => 'david',
+				'id' => 1,
+			),
+			array(
+				'name' => 'thomas',
+				'id' => 4,
+			),
+			array(
+				'name' => 'severin',
+				'id' => 10,
+			),
+			array(
+				'name' => 'john',
+				'id' => 12,
+			)
 		);
 		if (!empty($id)) {
-			$users = $users[$id];
+			$result = array();
+			foreach ($users as $user) {
+				if ($user['id'] == $id) {
+					$result = $user;
+					break;
+				}
+			}
+			$users = $result;
 		}
 		return $users;
 	}
