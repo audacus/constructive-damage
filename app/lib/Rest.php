@@ -1,9 +1,6 @@
 <?php
 
 use \Helper;
-use exception\ControllerNotFoundException;
-use exception\ClassMethodNotFoundException;
-use exception\ViewNotFoundException;
 
 class Rest {
 
@@ -45,11 +42,12 @@ class Rest {
 		$controllerClassName = $this->getControllerClassName($controllerName);
 		try {
 			$this->controller = new $controllerClassName();
+			$this->controller->setRequest($this->request);
 		} catch (\Exception $e) {
-			if ($e instanceof ViewNotFoundException) {
+			if ($e instanceof exception\ViewNotFoundException) {
 				throw $e;
 			} else if ($e instanceof FileNotFoundException) {
-				throw new ControllerNotFoundException($e->getMessage());
+				throw new exception\ControllerNotFoundException($e->getMessage());
 			} else {
 				throw $e;
 			}
@@ -116,7 +114,7 @@ class Rest {
 					break;
 			}
 		} else {
-			throw new ClassMethodNotFoundException($this->controller, $controllerMethod);
+			throw new exception\ClassMethodNotFoundException($this->controller, $controllerMethod);
 		}
 
 		// prepare for next loop

@@ -2,9 +2,6 @@
 
 namespace controller;
 
-use exception\ControllerNotFoundException;
-use exception\ViewNotFoundException;
-
 class ErrorController extends \ErrorHandler {
 
 	public static function exception(\Exception $e) {

@@ -8,11 +8,15 @@ class Database {
 	private static $db;
 	private static $dbConfig;
 
-	public static function getDb() {
+	public static function getDb($tableName = null) {
 		if (empty(self::$db)) {
 			self::setDb();
 		}
-		return self::$db;
+		$db = self::$db;
+		if (!empty($tableName)) {
+			$db = self::$db->$tableName;
+		}
+		return $db;
 	}
 
 	public static function setDb(NotORM $db = null) {
@@ -25,8 +29,14 @@ class Database {
 				.';host='.self::$dbConfig->get('db.host');
 			$user = self::$dbConfig->get('db.user');
 			$password = self::$dbConfig->get('db.password');
+			$structure = new NotORM_Structure_Convention(
+				$primary = 'id',
+				$foreign = '%s',
+				$table = '%s',
+				$prefix = ''
+			);
 
-			self::$db = new NotORM(new PDO($dsn, $user, $password));
+			self::$db = new NotORM(new PDO($dsn, $user, $password), $structure);
 		} else {
 			self::$db = $db;
 		}

@@ -11,7 +11,7 @@
 	foreach (glob('view/js/*.js') as $js) {
 		echo '<script src="'.$js.'" type="text/javascript" charset="utf-8" async defer></script>'."\n";
 	}
-	echo '<script type="text/javascript">var data = JSON.parse(\''.json_encode($this->getData()).'\');</script>'."\n";
+	echo '<script type="text/javascript">window.data = JSON.parse(\''.json_encode($this->getData()).'\');</script>'."\n";
 ?>
 </head>
 <body>
