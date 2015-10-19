@@ -1,6 +1,5 @@
 <?php
 
-use \Helper;
 use \Config;
 
 class Database {
@@ -54,7 +53,7 @@ class Database {
 	public static function setDbConfig(Config $config = null) {
 		if (empty($config)) {
 			if (empty(self::$dbConfig) && file_exists(DEFAULT_CONFIG_PATH) && file_exists(CONFIG_PATH)) {
-				self::$dbConfig = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
+				self::$dbConfig = Config::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH);
 			}
 		} else {
 			self::$dbConfig($config);

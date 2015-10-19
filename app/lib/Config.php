@@ -30,4 +30,16 @@ class Config {
 		$this->delimiter = $delimiter;
 		return $this->delimiter;
 	}
+
+	public static function parseConfig($defaultConfigPath, $configPath) {
+		$defaultConfig = array();
+		$config = array();
+		if (file_exists($defaultConfigPath)) {
+			$defaultConfig = json_decode(file_get_contents($defaultConfigPath), true);
+		}
+		if (file_exists($configPath)) {
+			$config = json_decode(file_get_contents($configPath), true);
+		}
+		return new self(array_replace_recursive($defaultConfig, $config));
+	}
 }

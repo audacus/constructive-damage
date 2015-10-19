@@ -42,7 +42,7 @@ abstract class AbstractController {
 	}
 
 	private function init(AbstractController $controller = null) {
-		$this->config = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
+		$this->config = Config::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH);
 		$this->language = new Language();
 		if (!empty($controller)) {
 			$this->view = $controller->getView();

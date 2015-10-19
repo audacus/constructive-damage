@@ -24,7 +24,7 @@ abstract class AbstractView {
 	protected $jsFiles;
 
 	public function __construct() {
-		$this->config = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
+		$this->config = Config::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH);
 		$this->header = $this->setHeader();
 		$this->footer = $this->getFooter();
 		$this->content = $this->getContent();
