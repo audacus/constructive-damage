@@ -16,25 +16,24 @@ abstract class AbstractController {
 	protected $config;
 	protected $view;
 
-	public function __construct(AbstractController &$controller = null) {
+	public function __construct(AbstractController $controller = null) {
 		$this->init($controller);
 	}
 
 	public abstract function get();
 
-	private function init(AbstractController &$controller = null) {
+	private function init(AbstractController $controller = null) {
 		$this->config = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
 		$this->language = new Language();
 		if (!empty($controller)) {
-			// TODO 2015-10-15: set the view as reference so setData will affect the $controllers view and not a copy of it
-			$this->view = &$controller->getView();
+			$this->view = $controller->getView();
 		} else {
-			$this->view = $this->getView();
+			$this->setView();
 		}
 	}
 
 	public function getTableName() {
-		return substr(strtolower(end(explode('\\', get_class($this)))), 0, -1);
+		return substr(\Helper::getLowerCaseClassName($this), 0, -1);
 	}
 
 	public function putLanguage($language) {
@@ -53,16 +52,25 @@ abstract class AbstractController {
 	}
 
 	protected function getView() {
-		$backtrace = debug_backtrace();
-		$view = null;
-		$name = end(explode('\\', get_class($this)));
-		$className = self::VIEW_PREFIX.$name;
-		try {
-			$view = new $className();
-		} catch (\Exception $e) {
-			throw new exception\ViewNotFoundException($e->getMessage());
+		if (empty($this->view)) {
+			$this->setView();
 		}
-		return $view;
+		return $this->view;
+	}
+
+	protected function setView(view\AbstractView $view = null) {
+		if (empty($view)) {
+			$name = end(explode('\\', get_class($this)));
+			$className = self::VIEW_PREFIX.$name;
+			try {
+				$this->view = new $className();
+			} catch (\Exception $e) {
+				throw new exception\ViewNotFoundException($e->getMessage());
+			}
+		} else {
+			$this->view = $view;
+		}
+		return $this->view;
 	}
 
 }

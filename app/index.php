@@ -1,7 +1,7 @@
 <?php
 
 if (!defined('APPLICATION_PATH')) {
-	define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../app'));
+	define('APPLICATION_PATH', realpath(dirname(__FILE__)));
 }
 
 if (!defined('DEFAULT_CONFIG_PATH')) {

@@ -1,6 +1,6 @@
 <?php
 
-use \Database;
+use \Helper;
 
 namespace model\mapper;
 
@@ -10,7 +10,7 @@ abstract class AbstractModelMapper {
 	private $tableName;
 
 	public function __construct() {
-		$this->tableName = strtolower(end(explode('\\', get_class($this))));
+		$this->tableName = Helper::getLowerCaseClassName();
 	}
 
 	public function __toString() {

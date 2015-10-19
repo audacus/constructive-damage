@@ -5,10 +5,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title><?php echo $this->config->get('app.name'); ?></title>
 <?php
-	foreach (glob('view/css/*.css') as $css) {
+	foreach ($this->getCssFiles() as $css) {
 		echo '<link type="text/css" rel="stylesheet" href="'.$css.'">'."\n";
 	}
-	foreach (glob('view/js/*.js') as $js) {
+	foreach ($this->getJsFiles() as $js) {
 		echo '<script src="'.$js.'" type="text/javascript" charset="utf-8" async defer></script>'."\n";
 	}
 	echo '<script type="text/javascript">window.data = JSON.parse(\''.json_encode($this->getData()).'\');</script>'."\n";

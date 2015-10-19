@@ -22,12 +22,10 @@ function ajax() {
 	request.onreadystatechange = function() {
 		if (request.readyState === 4) {
 			if (request.status === 200) {
-				console.log('success');
 				if (parameters.success) {
 					parameters.success(request, parameters);
 				}
 			} else {
-				console.log('failure');
 				if (parameters.failure) {
 					parameters.failure(request, parameters);
 				}

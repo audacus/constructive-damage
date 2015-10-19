@@ -34,4 +34,20 @@ class Helper {
 	public static function validatePassword($password, $hash) {
 		return hash_equals($hash, crypt($password, $hash));
 	}
+
+	public static function getLowerCaseClassName($class) {
+		return strtolower(end(explode('\\', get_class($class))));
+	}
+
+	public static function getRelativePath($path) {
+		return substr($path, strlen(APPLICATION_PATH)+1);
+	}
+
+	public static function getRelativePaths(array $paths) {
+		$relativePaths = array();
+		foreach ($paths as $path) {
+			$relativePaths[] = self::getRelativePath($path);
+		}
+		return $relativePaths;
+	}
 }

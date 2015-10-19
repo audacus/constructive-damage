@@ -34,14 +34,13 @@ class Users extends AbstractController {
 	}
 
 	public function post(array $data = array()) {
-		$tableUser = 'user';
 		$result = null;
 		$errors = $this->getErrors($data);
 		if (empty($errors)) {
 			// add user
 			unset($data['register']);
 			$data['password'] = \Helper::hashPassword($data['username'], $data['password']);
-			$result = \Database::getDb($tableUser)->insert($data);
+			$result = \Database::getDb($this->getTableName())->insert($data);
 			if ($result === false) {
 				throw new exception\DatabaseError();
 			}
@@ -52,7 +51,27 @@ class Users extends AbstractController {
 	}
 
 	public function put($id = null, array $data = array()) {
-
+		$result = false;
+		if (!empty($id)) {
+			$row = \Database::getDb($this->getTableName())->where('id', $id);
+			if ($row) {
+				$data['id'] = $id;
+				// username shall not be changed
+				if (isset($data['username'])) {
+					unset($data['username']);
+				}
+				$errors = $this->getErrors($data);
+				if (empty($errors)) {
+					if (isset($data['password'])) {
+						$data['password'] = \Helper::hashPassword($row['username'], $data['password']);
+					}
+					$result = $row->update($data);
+				} else {
+					$result = $errors;
+				}
+			}
+		}
+		return $result;
 	}
 
 	public function patch($id = null, array $data = array()) {
@@ -76,7 +95,9 @@ class Users extends AbstractController {
 				}
 			}
 		} else {
-			$errors[] = self::ERROR_MISSING_USERNAME;
+			if (!isset($data['id'])) {
+				$errors[] = self::ERROR_MISSING_USERNAME;
+			}
 		}
 		// email
 		if (isset($data['email']) && !empty($data['email'])) {
@@ -84,12 +105,14 @@ class Users extends AbstractController {
 			if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 				$errors[] = self::ERROR_INVALID_EMAIL;
 			} else {
-				if (count(\Database::getDb($this->getTableName())->where('email', $data['email'])) > 0) {
+				if (!isset($data['id']) && count(\Database::getDb($this->getTableName())->where('email', $data['email'])) > 0) {
 					$errors[] = self::ERROR_EMAIL_ALREADY_USED;
 				}
 			}
 		} else {
-			$errors[] = self::ERROR_MISSING_EMAIL;
+			if (!isset($data['id'])) {
+				$errors[] = self::ERROR_MISSING_EMAIL;
+			}
 		}
 		// password
 		if (isset($data['password']) && !empty($data['password'])) {
@@ -98,7 +121,9 @@ class Users extends AbstractController {
 				$errors[] = sprintf(self::ERROR_PASSWORD_TOO_SHORT, self::PASSWORD_MIN_LENGTH);
 			}
 		} else {
-			$errors[] = self::ERROR_MISSING_PASSWORD;
+			if (!isset($data['id'])) {
+				$errors[] = self::ERROR_MISSING_PASSWORD;
+			}
 		}
 		return $errors;
 	}
