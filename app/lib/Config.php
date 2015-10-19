@@ -30,5 +30,4 @@ class Config {
 		$this->delimiter = $delimiter;
 		return $this->delimiter;
 	}
-
 }

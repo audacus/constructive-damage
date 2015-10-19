@@ -26,8 +26,8 @@ abstract class AbstractView {
 	public function __construct() {
 		$this->config = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
 		$this->header = $this->setHeader();
-		$this->footer = $this->setFooter();
-		$this->content = $this->setContent();
+		$this->footer = $this->getFooter();
+		$this->content = $this->getContent();
 		$this->setCssFiles(array_merge($this->getDefaultCssFiles(), $this->getViewCssFiles()));
 		$this->setJsFiles(array_merge($this->getDefaultJsFiles(), $this->getViewJsFiles()));
 	}
@@ -111,30 +111,58 @@ abstract class AbstractView {
 		return $this->getJsFiles();
 	}
 
-	private function setHeader() {
-		$headerPathParts = array(
-			dirname(__FILE__),
-			self::SCRIPTS_PATH,
-			self::DEFAULT_SCRIPT_HEADER
-		);
-		$this->header = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $headerPathParts));
+	private function getHeader() {
+		if (empty($this->header)) {
+			$headerPathParts = array(
+				dirname(__FILE__),
+				self::SCRIPTS_PATH,
+				self::DEFAULT_SCRIPT_HEADER
+			);
+			$this->header = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $headerPathParts));
+		}
 		return $this->header;
 	}
 
-	private function setFooter() {
-		$footerPathParts = array(
-			dirname(__FILE__),
-			self::SCRIPTS_PATH,
-			self::DEFAULT_SCRIPT_FOOTER
-		);
-		$this->footer = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $footerPathParts));
+	private function setHeader($header = null) {
+		if (empty($header) && empty($this->header)) {
+			$this->getHeader();
+		} else {
+			if ($header instanceof \SplFileInfo) {
+				$this->header = $header;
+			} else if (is_string($header)) {
+				$this->header = new \SplFileInfo($header);
+			}
+		}
+		return $this->header;
+	}
+
+	private function getFooter() {
+		if (empty($this->footer)) {
+			$footerPathParts = array(
+				dirname(__FILE__),
+				self::SCRIPTS_PATH,
+				self::DEFAULT_SCRIPT_HEADER
+			);
+			$this->footer = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $footerPathParts));
+		}
 		return $this->footer;
 	}
 
-	private function setContent($contentPath = null) {
-		if (!empty($contentPath)) {
-			$this->content = new \SplFileInfo($contentPath);
+	private function setFooter($footer = null) {
+		if (empty($footer) && empty($this->footer)) {
+			$this->getFooter();
 		} else {
+			if ($footer instanceof \SplFileInfo) {
+				$this->footer = $footer;
+			} else if (is_string($footer)) {
+				$this->footer = new \SplFileInfo($footer);
+			}
+		}
+		return $this->footer;
+	}
+
+	private function getContent() {
+		if (empty($this->content)) {
 			$contentPathParts = array(
 				dirname(__FILE__),
 				self::SCRIPTS_PATH,
@@ -144,6 +172,19 @@ abstract class AbstractView {
 			$this->content = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $contentPathParts));
 		}
 		return $this->content;
+	}
+
+	private function setContent($footer = null) {
+		if (empty($footer) && empty($this->footer)) {
+			$this->getContent();
+		} else {
+			if ($footer instanceof \SplFileInfo) {
+				$this->footer = $footer;
+			} else if (is_string($footer)) {
+				$this->footer = new \SplFileInfo($footer);
+			}
+		}
+		return $this->footer;
 	}
 
 	private function getDefaultFiles($folder, $fileEnding = null) {
