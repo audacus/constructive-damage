@@ -20,7 +20,26 @@ abstract class AbstractController {
 		$this->init($controller);
 	}
 
-	public abstract function get();
+	public function get($id = null) {
+		$users = array();
+		$result = \Database::getDb($this->getTableName());
+		if (!empty($id)) {
+			$result->where('id', $id);
+		}
+		return iterator_to_array($result, false);
+	}
+
+	public function patch($id = null, array $data = array()) {
+		return $this->put($id, $data);
+	}
+
+	public function delete($id = null) {
+		$affected = false;
+		if (!empty($id)) {
+			$affected = (bool) \Database::getDb($this->getTableName())->where('id', $id)->delete();
+		}
+		return $affected;
+	}
 
 	private function init(AbstractController $controller = null) {
 		$this->config = new Config(Helper::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH));
