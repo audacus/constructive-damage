@@ -21,8 +21,8 @@ class Helper {
 		return array_replace_recursive($defaultConfig, $config);
 	}
 
-	public static function isCssCall() {
-		return !empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'text/css') !== false;
+	public static function isIterable($variable) {
+		return (is_array($variable) || $variable instanceof Traversable || $variable instanceof stdClass);
 	}
 
 	public static function hashPassword($username, $password) {
