@@ -24,15 +24,6 @@ class Users extends AbstractController {
 		die('index function');
 	}
 
-	public function get($id = null) {
-		$users = array();
-		$result = \Database::getDb('user');
-		if (!empty($id)) {
-			$result->where('id', $id);
-		}
-		return iterator_to_array($result);
-	}
-
 	public function post(array $data = array()) {
 		$result = null;
 		$errors = $this->getErrors($data);
@@ -40,11 +31,9 @@ class Users extends AbstractController {
 			// add user
 			unset($data['register']);
 			$data['password'] = \Helper::hashPassword($data['username'], $data['password']);
-			$result = \Database::getDb($this->getTableName())->insert($data);
-			if ($result === false) {
-				throw new exception\DatabaseError();
-			}
+			$result = (bool) \Database::getDb($this->getTableName())->insert($data);
 		} else {
+			$result['errors'] = $errors;
 			$this->view->setData(array('errors' => $errors));
 		}
 		return $result;
@@ -67,19 +56,11 @@ class Users extends AbstractController {
 					}
 					$result = $row->update($data);
 				} else {
-					$result = $errors;
+					$result['errors'] = $errors;
 				}
 			}
 		}
 		return $result;
-	}
-
-	public function patch($id = null, array $data = array()) {
-
-	}
-
-	public function delete($id = null) {
-
 	}
 
 	private function getErrors(array $data) {
