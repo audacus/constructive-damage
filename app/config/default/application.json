@@ -1,6 +1,10 @@
 {
 	"app": {
-		"name": "some application"
+		"name": "some application",
+		"info": {
+			"author": "Carlos Ray Norris",
+			"date": "1940-05-10"
+		}
 	},
 	"db": {
 		"host": "localhost",
