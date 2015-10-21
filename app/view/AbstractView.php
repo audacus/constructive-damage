@@ -141,7 +141,7 @@ abstract class AbstractView {
 			$footerPathParts = array(
 				dirname(__FILE__),
 				self::SCRIPTS_PATH,
-				self::DEFAULT_SCRIPT_HEADER
+				self::DEFAULT_SCRIPT_FOOTER
 			);
 			$this->footer = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $footerPathParts));
 		}
