@@ -5,7 +5,7 @@ class Helper {
 	const COST = 10;
 	const BLOWFISH = '$2a$%02d$';
 
-	public static function isAjax() {
+	public static function isAjaxRequest() {
 		return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 	}
 	public static function isIterable($variable) {
