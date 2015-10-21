@@ -127,7 +127,7 @@ class Rest {
 
 	private function dispatch($value = null) {
 		$returnValue = null;
-		if (Helper::isAjax()) {
+		if (Helper::isAjaxRequest()) {
 			$returnValue = $this->formatJson($value);
 		} else {
 			if (is_null($value)) {
@@ -151,14 +151,12 @@ class Rest {
 			}
 		}
 		switch ($format) {
-			case self::FORMAT_JSON:
-				$this->formatJson($value);
-				break;
 			case self::FORMAT_XML:
 				$this->formatXml($value);
 				break;
+			case self::FORMAT_JSON:
 			default:
-				// do nothing
+				$this->formatJson($value);
 				break;
 		}
 		return $value;
