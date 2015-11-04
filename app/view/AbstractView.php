@@ -194,7 +194,7 @@ abstract class AbstractView {
 			$folder,
 			'*.'.(empty($fileEnding) ? $folder : $fileEnding)
 		);
-		return \Helper::getRelativePaths(glob(implode(DIRECTORY_SEPARATOR, $defaultFilesPathParts)));
+		return Helper::getRelativePaths(glob(implode(DIRECTORY_SEPARATOR, $defaultFilesPathParts)));
 	}
 
 	private function getDefaultCssFiles() {
@@ -213,7 +213,7 @@ abstract class AbstractView {
 			$folder,
 			'*.'.(empty($fileEnding) ? $folder : $fileEnding)
 		);
-		return \Helper::getRelativePaths(glob(implode(DIRECTORY_SEPARATOR, $viewFilesPathParts)));
+		return Helper::getRelativePaths(glob(implode(DIRECTORY_SEPARATOR, $viewFilesPathParts)));
 
 	}
 
