@@ -2,6 +2,9 @@
 
 namespace controller;
 
+use \Helper;
+use \Database;
+
 class Users extends AbstractController {
 
 	// errors
@@ -25,13 +28,13 @@ class Users extends AbstractController {
 	}
 
 	public function post(array $data = array()) {
-		$result = null;
+		$result = array('insert' => false);
 		$errors = $this->getErrors($data);
 		if (empty($errors)) {
 			// add user
 			unset($data['register']);
-			$data['password'] = \Helper::hashPassword($data['username'], $data['password']);
-			$result = (bool) \Database::getDb($this->getTableName())->insert($data);
+			$data['password'] = Helper::hashPassword($data['username'], $data['password']);
+			$result['insert'] = $this->_post($data);
 		} else {
 			$result['errors'] = $errors;
 			$this->view->setData(array('errors' => $errors));
@@ -40,10 +43,11 @@ class Users extends AbstractController {
 	}
 
 	public function put($id = null, array $data = array()) {
-		$result = false;
+		$result = array('update' => false);
 		if (!empty($id)) {
-			$row = \Database::getDb($this->getTableName())->where('id', $id);
+			$row = Database::getDb($this->getTableName())->where('id', $id);
 			if ($row) {
+				// needed to check errors detailed
 				$data['id'] = $id;
 				// username shall not be changed
 				if (isset($data['username'])) {
@@ -52,9 +56,9 @@ class Users extends AbstractController {
 				$errors = $this->getErrors($data);
 				if (empty($errors)) {
 					if (isset($data['password'])) {
-						$data['password'] = \Helper::hashPassword($row['username'], $data['password']);
+						$data['password'] = Helper::hashPassword($row['username'], $data['password']);
 					}
-					$result = $row->update($data);
+					$result['update'] = $this->_put($id, $data);
 				} else {
 					$result['errors'] = $errors;
 				}
@@ -63,6 +67,7 @@ class Users extends AbstractController {
 		return $result;
 	}
 
+	// if data[id] is set -> check for update else -> check for insert
 	private function getErrors(array $data) {
 		$errors = array();
 		// username
@@ -71,7 +76,7 @@ class Users extends AbstractController {
 			if (strlen($username) < self::USERNAME_MIN_LENGTH) {
 				$errors[] = sprintf(self::ERROR_USERNAME_TOO_SHORT, self::USERNAME_MIN_LENGTH);
 			} else {
-				if (count(\Database::getDb($this->getTableName())->where('username = ?', $data['username'])) > 0) {
+				if (count(Database::getDb($this->getTableName())->where('username = ?', $data['username'])) > 0) {
 					$errors[] = self::ERROR_USERNAME_ALREADY_USED;
 				}
 			}
@@ -86,8 +91,13 @@ class Users extends AbstractController {
 			if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 				$errors[] = self::ERROR_INVALID_EMAIL;
 			} else {
-				if (!isset($data['id']) && count(\Database::getDb($this->getTableName())->where('email', $data['email'])) > 0) {
-					$errors[] = self::ERROR_EMAIL_ALREADY_USED;
+				$rows = Database::getDb($this->getTableName())->where('email', $data['email']);
+				if (count($rows) > 0) {
+					if (!isset($data['id'])
+						|| (isset($data['id']) && count($rows) > 1)
+						|| (isset($data['id']) && count($rows) === 1 && count($rows->where('id', $data['id'])) === 0)) {
+						$errors[] = self::ERROR_EMAIL_ALREADY_USED;
+					}
 				}
 			}
 		} else {
