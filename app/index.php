@@ -24,16 +24,16 @@ foreach (glob('lib/*.php') as $filename) {
 }
 
 // initialize autoloader
-require_once 'Autoloader.php';
+require 'Autoloader.php';
 spl_autoload_register(array('Autoloader', 'load'));
 
 // initialize error controller
-require_once 'ErrorHandler.php';
+require 'ErrorHandler.php';
 set_error_handler('controller\ErrorController::error');
 set_exception_handler('controller\ErrorController::exception');
 
-// include NotORM
-require_once 'notorm/NotORM.php';
+// require NotORM
+require 'notorm/NotORM.php';
 
 // start application
 new App();
