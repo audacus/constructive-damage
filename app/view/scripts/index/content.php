@@ -10,7 +10,7 @@
 		new Ajax.request({
 			method: (document.getElementById('method').value ? document.getElementById('method').value : null),
 			url: (document.getElementById('url').value ? document.getElementById('url').value : null),
-			data: (document.getElementById('data').value ? JSON.parse(document.getElementById('data').value) : null),
+			data: (isValidJsonString(document.getElementById('data').value) ? JSON.parse(document.getElementById('data').value) : null),
 			success: function(request, parameters) {
 				document.getElementById('result').innerHTML = request.responseText;
 			},
