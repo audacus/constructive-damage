@@ -1,7 +1,5 @@
 <?php
 
-use \Database;
-
 class Bootstrap {
 
 	public function __construct() {

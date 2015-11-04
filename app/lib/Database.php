@@ -1,7 +1,5 @@
 <?php
 
-use \Config;
-
 class Database {
 
 	private static $db;
