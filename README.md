@@ -11,6 +11,6 @@ A 100% modular browser game.
 * The app/config/application.json should be added to overwrite default config
 * Adjust the NotORM requirement call in app/index.php if necessary (default: 'notorm/NotORM.php')
 
-## Todo
+#### Todo
 * authentication (how? where/when?)
 * language
