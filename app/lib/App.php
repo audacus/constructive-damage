@@ -1,8 +1,5 @@
 <?php
 
-use \Bootstrap;
-use \Rest;
-
 class App {
 
 	public function __construct() {
