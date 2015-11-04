@@ -18,8 +18,8 @@ class Helper {
 		return crypt($password, $salt);
 	}
 
-	public static function validatePassword($password, $hash) {
-		return hash_equals($hash, crypt($password, $hash));
+	public static function validatePassword($password, $passwordHash) {
+		return hash_equals($passwordHash, crypt($password, $passwordHash));
 	}
 
 	public static function getLowerCaseClassName($class) {
