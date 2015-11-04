@@ -21,7 +21,7 @@ abstract class AbstractModelMapper {
 
 	public function getTable() {
 		if (empty($this->table)) {
-			$this->table = \Database::getDb($this->getTableName());
+			$this->table = Database::getDb($this->getTableName());
 		}
 		return $this->table;
 	}
