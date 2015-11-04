@@ -10,3 +10,7 @@ A 100% modular browser game.
 * Makes use of [NotORM](https://github.com/vrana/notorm) library for working with databases
 * The app/config/application.json should be added to overwrite default config
 * Adjust the NotORM requirement call in app/index.php if necessary (default: 'notorm/NotORM.php')
+
+## Todo
+* authentication (how? where/when?)
+* language
