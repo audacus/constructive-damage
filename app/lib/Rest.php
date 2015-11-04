@@ -1,7 +1,5 @@
 <?php
 
-use \Helper;
-
 class Rest {
 
 	const DEFAULT_CONTROLLER = 'index';
@@ -10,7 +8,7 @@ class Rest {
 	const METHOD_POST = 'post';
 	const METHOD_DELETE = 'delete';
 	const METHOD_PUT = 'put';
-	const METHOD_PATH = 'patch';
+	const METHOD_PATCH = 'patch';
 	const DEFAULT_METHOD = self::METHOD_GET;
 	const FORMAT_JSON = 'json';
 	const FORMAT_XML = 'xml';
@@ -27,7 +25,8 @@ class Rest {
 	);
 
 	public function __construct() {
-		require_once 'RestRequest.php';
+		// include RestRequest
+		include 'RestRequest.php';
 		$this->request = new RestRequest();
 		$urlElements = $this->request->getUrlElements();
 		echo $this->dispatch($this->processParams($urlElements));
@@ -44,10 +43,8 @@ class Rest {
 			$this->controller = new $controllerClassName();
 			$this->controller->setRequest($this->request);
 		} catch (\Exception $e) {
-			if ($e instanceof exception\ViewNotFoundException) {
-				throw $e;
-			} else if ($e instanceof FileNotFoundException) {
-				throw new exception\ControllerNotFoundException($e->getMessage());
+			if ($e instanceof \ClassNotFoundException) {
+				throw new \exception\ControllerNotFoundException($e->getMessage());
 			} else {
 				throw $e;
 			}
@@ -65,7 +62,6 @@ class Rest {
 		if (isset($urlParams[1])) {
 			$controllerMethodParam = $urlParams[1];
 		}
-
 		// process
 		$returnValue = null;
 		if (method_exists($this->controller, $controllerMethod)) {
@@ -114,7 +110,7 @@ class Rest {
 					break;
 			}
 		} else {
-			throw new exception\ClassMethodNotFoundException($this->controller, $controllerMethod);
+			throw new \exception\ClassMethodNotFoundException($this->controller, $controllerMethod);
 		}
 
 		// prepare for next loop
