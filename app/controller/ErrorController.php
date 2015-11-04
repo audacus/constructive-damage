@@ -13,17 +13,17 @@ class ErrorController extends \ErrorHandler {
 		}
 		switch ($e->getCode()) {
 		case E_USER_ERROR:
-			echo "<b>USER ERROR</b> ".$e->getCode()." ".$e->getMessage()."<br />\n";
-			echo "  Fatal error on line ".$e->getLine()." in file ".$e->getFile();
-			echo ", PHP ".PHP_VERSION." (".PHP_OS.")<br />\n";
-			echo "Aborting...<br />\n";
+			echo '<b>USER ERROR</b> '.$e->getCode().' '.$e->getMessage().'<br />\n';
+			echo '  Fatal error on line '.$e->getLine().' in file '.$e->getFile();
+			echo ', PHP '.PHP_VERSION.' ('.PHP_OS.')<br />\n';
+			echo 'Aborting...<br />\n';
 			exit(1);
 			break;
 		case E_USER_WARNING:
-			echo "<b>WARNING</b> ".$e->getCode()." ".$e->getMessage()."<br />\n";
+			echo '<b>WARNING</b> '.$e->getCode().' '.$e->getMessage().'<br />\n';
 			break;
 		case E_USER_NOTICE:
-			echo "<b>NOTICE</b> ".$e->getCode()." ".$e->getMessage()."<br />\n";
+			echo '<b>NOTICE</b> '.$e->getCode().' '.$e->getMessage().'<br />\n';
 			break;
 		default:
 			self::printError($e);
@@ -34,6 +34,6 @@ class ErrorController extends \ErrorHandler {
 	}
 
 	private static function printError(\Exception $e) {
-		echo "<b>".get_class($e)."</b> ".$e->getMessage()." on line ".$e->getLine()." in file ".$e->getFile()."<pre>".$e->getTraceAsString()."</pre>";
+		echo '<b>'.get_class($e).'</b> '.$e->getMessage().' on line '.$e->getLine().' in file '.$e->getFile().'<pre>'.$e->getTraceAsString().'</pre>';
 	}
 }
