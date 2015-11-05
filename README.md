@@ -14,3 +14,4 @@ A 100% modular browser game.
 #### Todo
 * authentication (how? where/when?)
 * language
+* salt handling @helper
