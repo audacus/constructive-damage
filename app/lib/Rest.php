@@ -26,7 +26,7 @@ class Rest {
 
 	public function __construct() {
 		// include RestRequest
-		include 'RestRequest.php';
+		include 'php-rest-api/RestRequest.php';
 		$this->request = new RestRequest();
 		$urlElements = $this->request->getUrlElements();
 		echo $this->dispatch($this->processParams($urlElements));
