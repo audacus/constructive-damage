@@ -24,11 +24,11 @@ foreach (glob('lib/*.php') as $filename) {
 }
 
 // initialize autoloader
-require 'Autoloader.php';
+require 'php-autoloader/Autoloader.php';
 spl_autoload_register(array('Autoloader', 'load'));
 
 // initialize error controller
-require 'ErrorHandler.php';
+require 'php-error-handler/ErrorHandler.php';
 set_error_handler('controller\ErrorController::error');
 set_exception_handler('controller\ErrorController::exception');
 
