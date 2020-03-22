@@ -1,0 +1,33 @@
+{
+	"app": {
+		"name": "constructive damage",
+		"info": {
+			"author": "Hug Studios",
+			"date": "2015-08-13"
+		},
+		"mail": {
+			"name": "constructive damage",
+			"address": "noreply@constructivedamage.xyz"
+		},
+		"url": {
+			"host": "constructivedamage.xyz",
+			"base": "/cd"
+		},
+		"lua": {
+			"filepath": "lib/lua",
+			"avatarscript": "object_n_1"
+		},
+		"game": {
+			"controller": "game"
+		}
+	},
+	"db": {
+		"host": "localhost",
+		"user": "root",
+		"password": "this1sVeryRandom",
+		"name": "constructive_damage",
+		"pdo": {
+			"type": "mysql"
+		}
+	}
+}

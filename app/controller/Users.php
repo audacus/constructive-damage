@@ -2,120 +2,87 @@
 
 namespace controller;
 
-use \Helper;
+use model\Luainstance;
+use \Config;
 use \Database;
+use \Helper;
+use \Security;
 
 class Users extends AbstractController {
 
-	// errors
-	const NO_ERROR = false;
-	// username
-	const USERNAME_MIN_LENGTH = 3;
-	const ERROR_MISSING_USERNAME = 'missing username!';
-	const ERROR_USERNAME_TOO_SHORT = 'username must be at least %d characters long!';
-	const ERROR_USERNAME_ALREADY_USED = 'username is already in use!';
-	// email
-	const ERROR_MISSING_EMAIL = 'missing email!';
-	const ERROR_INVALID_EMAIL = 'email is invalid!';
-	const ERROR_EMAIL_ALREADY_USED = 'email is already in use!';
-	// password
-	const PASSWORD_MIN_LENGTH = 6;
-	const ERROR_MISSING_PASSWORD = 'missing password!';
-	const ERROR_PASSWORD_TOO_SHORT = 'password must be at least %d characters long!';
+	protected $noView = true;
+	protected $foreignKey = 'author';
 
-	public function index() {
-		die('index function');
+	public function modifyResultGet() {
+		// for security reasons
+		if (Helper::isAjaxRequest()) {
+			$modifiedResult = array();
+			foreach ($this->result as $result) {
+				$result['email'] = 'cnAuYXN0bGV5QHBvbHlkb3Iub3Jn';
+				unset($result['salt']);
+				$result['password'] = 'fedef920f598b065584fb00d2bce58d6';
+				unset($result['token']);
+				unset($result['series']);
+				$modifiedResult[] = $result;
+			}
+			$this->result = $modifiedResult;
+		}
 	}
 
-	public function post(array $data = array()) {
-		$result = array('insert' => false);
-		$errors = $this->getErrors($data);
-		if (empty($errors)) {
-			// add user
-			unset($data['register']);
-			$data['password'] = Helper::hashPassword($data['username'], $data['password']);
-			$result['insert'] = $this->_post($data);
-		} else {
-			$result['errors'] = $errors;
-			$this->view->setData(array('errors' => $errors));
+	public function _post() {
+		$this->result = null;
+		if ($this->validateData($this->data)) {
+			$user = new $this->model($this->data);
+			$user->setSalt(Security::generateToken())
+				->setToken(Security::generateToken())
+				->setSeries(Security::generateToken())
+				->setKeymap(self::getDefaultKeymap())
+				->setPassword(Security::generatePasswordHash($user->getPassword(), $user->getSalt()))
+				->setAvatar($this->generateAvatar());
+			$array = $user->toArray();
+			// unset fields for db insert
+			unset($array['id'], $array['lastlogin'], $array['loginattempts'], $array['activated']);
+			$this->result = Database::resultToArray($this->getDb()->insert($array));
 		}
-		return $result;
+		return $this->result;
 	}
 
-	public function put($id = null, array $data = array()) {
-		$result = array('update' => false);
-		if (!empty($id)) {
-			$row = Database::getDb($this->getTableName())->where('id', $id);
-			if ($row) {
-				// needed to check errors detailed
-				$data['id'] = $id;
-				// username shall not be changed
-				if (isset($data['username'])) {
-					unset($data['username']);
-				}
-				$errors = $this->getErrors($data);
-				if (empty($errors)) {
-					if (isset($data['password'])) {
-						$data['password'] = Helper::hashPassword($row['username'], $data['password']);
-					}
-					$result['update'] = $this->_put($id, $data);
-				} else {
-					$result['errors'] = $errors;
-				}
-			}
-		}
-		return $result;
+	private function generateAvatar() {
+		$controllerLuainstances = new Luainstances();
+		$result = $controllerLuainstances->post($controllerLuainstances->getDefaultAvatar());
+		return $controllerLuainstances->newModel($result);
 	}
 
-	// if data[id] is set -> check for update else -> check for insert
-	private function getErrors(array $data) {
-		$errors = array();
-		// username
-		if (isset($data['username']) && !empty($data['username'])) {
-			$username = $data['username'];
-			if (strlen($username) < self::USERNAME_MIN_LENGTH) {
-				$errors[] = sprintf(self::ERROR_USERNAME_TOO_SHORT, self::USERNAME_MIN_LENGTH);
-			} else {
-				if (count(Database::getDb($this->getTableName())->where('username = ?', $data['username'])) > 0) {
-					$errors[] = self::ERROR_USERNAME_ALREADY_USED;
-				}
-			}
-		} else {
-			if (!isset($data['id'])) {
-				$errors[] = self::ERROR_MISSING_USERNAME;
-			}
+	private function validateData($data) {
+		$valid = true;
+		// if user with username already exist
+		if (!isset($data['username'])) {
+			$this->view->appendError('no username given!');
+			$valid = false;
+		} else if (count($this->getDb()->where('username like ?', $data['username'])) > 0) {
+			$this->view->appendError('username is already in use!');
+			$valid = false;
 		}
-		// email
-		if (isset($data['email']) && !empty($data['email'])) {
-			$email = $data['email'];
-			if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-				$errors[] = self::ERROR_INVALID_EMAIL;
-			} else {
-				$rows = Database::getDb($this->getTableName())->where('email', $data['email']);
-				if (count($rows) > 0) {
-					if (!isset($data['id'])
-						|| (isset($data['id']) && count($rows) > 1)
-						|| (isset($data['id']) && count($rows) === 1 && count($rows->where('id', $data['id'])) === 0)) {
-						$errors[] = self::ERROR_EMAIL_ALREADY_USED;
-					}
-				}
-			}
-		} else {
-			if (!isset($data['id'])) {
-				$errors[] = self::ERROR_MISSING_EMAIL;
-			}
+		// if entered passwords the same
+		if (!isset($data['password'])) {
+			$this->view->appendError('no password given!');
+			$valid = false;
+		} else if ($data['password'] !== $data['password-repeat']) {
+			$this->view->appendError('passwords are not the same!');
+			$valid = false;
 		}
-		// password
-		if (isset($data['password']) && !empty($data['password'])) {
-			$password = $data['password'];
-			if (strlen($password) < self::PASSWORD_MIN_LENGTH) {
-				$errors[] = sprintf(self::ERROR_PASSWORD_TOO_SHORT, self::PASSWORD_MIN_LENGTH);
-			}
-		} else {
-			if (!isset($data['id'])) {
-				$errors[] = self::ERROR_MISSING_PASSWORD;
-			}
+		// if user with email already exist
+		if (!isset($data['email'])) {
+			$this->view->appendError('no email given!');
+			$valid = false;
+		} else if (count($this->getDb()->where('email like ?', $data['email'])) > 0) {
+			$this->view->appendError('email is already in use!');
+			$valid = false;
 		}
-		return $errors;
+		return $valid;
+	}
+
+	private static function getDefaultKeymap() {
+		return '{"some":"json"}';
 	}
 }

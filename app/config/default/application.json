@@ -1,9 +1,81 @@
 {
 	"app": {
 		"name": "some application",
+		"defaultcontroller": "index",
+		"date": {
+			"format": {
+				"short": "Y-m-d",
+				"long": "Y-m-d H:i:s"
+			}
+		},
+		"security": {
+			"cookie": {
+				"expire": "30 days"
+			}
+		},
 		"info": {
 			"author": "Carlos Ray Norris",
 			"date": "1940-05-10"
+		},
+		"mail": {
+			"name": "some application mail",
+			"address": "mail@someapplication.mail"
+		},
+		"url": {
+			"https": false,
+			"host": "localhost",
+			"base": "/",
+			"css": {
+				"default": "scripts/css",
+				"controller": "scripts/%s/css"
+			},
+			"js": {
+				"default": "scripts/js",
+				"controller": "scripts/%s/js"
+			}
+		},
+		"path": {
+			"config": {
+				"default": "config/default/application.json",
+				"application": "config/application.json"
+			},
+			"controller": "controller",
+			"lib": "lib",
+			"exception": "lib/exception",
+			"model": "model",
+			"mapper": "model/mapper",
+			"public": "public",
+			"view": "view",
+			"misc": "lib/misc",
+			"viewscripts": {
+				"scripts": "view/scripts",
+				"controller": "view/scripts/%s",
+				"header": "header.php",
+				"content": "content.php",
+				"footer": "footer.php"
+			}
+		},
+		"exception": {
+			"file": "php-exception/AbstractException.php"
+		},
+		"autoloader": {
+			"file": "php-autoloader/Autoloader.php",
+			"class": "Autoloader",
+			"function": "load"
+		},
+		"errorhandler": {
+			"file": "php-error-handler/ErrorHandler.php",
+			"errorfunction": "controller\\Error::error",
+			"exceptionfunction": "controller\\Error::exception"
+		},
+		"rest": {
+			"request": "php-rest-api/RestRequest.php"
+		},
+		"view": {
+			"default": {
+				"render": true,
+				"format": "json"
+			}
 		}
 	},
 	"db": {
@@ -11,8 +83,18 @@
 		"user": "root",
 		"password": "",
 		"name": "",
+		"filepath": "lib/database",
 		"pdo": {
 			"type": "mysql"
+		},
+		"notorm": {
+			"file": "notorm/NotORM.php",
+			"structure": {
+				"primary": "id",
+				"foreign": "%s",
+				"table": "%s",
+				"prefix": ""
+			}
 		}
 	}
 }

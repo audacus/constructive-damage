@@ -2,9 +2,9 @@
 
 namespace controller;
 
+use \Helper;
+
 class Index extends AbstractController {
 
-	public function get() {
-		$this->view->setData(array('key' => 'value'));
-	}
+	protected $loginRequired = true;
 }

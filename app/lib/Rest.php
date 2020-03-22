@@ -1,9 +1,16 @@
 <?php
 
+/*
+ * This class is responsible for managing the request processing.
+ * It initializes the controller and calls the demanded method with the given parameters.
+ * When an AJAX request is made it will return the result of the controller method formated as JSON.
+ * Depending on the http method used it will call a controller method with the same name.
+ *
+ * @author david burkhart
+ */
 class Rest {
 
-	const DEFAULT_CONTROLLER = 'index';
-	const CONTROLLER_PREFIX = 'controller\\';
+	const METHOD_METHOD = 'method';
 	const METHOD_GET = 'get';
 	const METHOD_POST = 'post';
 	const METHOD_DELETE = 'delete';
@@ -16,101 +23,75 @@ class Rest {
 
 	private $request;
 	private $controller;
-	private $methods = array(
-
-	);
+	private $methods = array();
 	private $formats = array(
 		self::FORMAT_JSON,
 		self::FORMAT_XML
 	);
 
+	/*
+	 * Constructor of the the class.
+	 * It initializes the rest request and prints the result of the request processing.
+	 */
 	public function __construct() {
 		// include RestRequest
-		include 'php-rest-api/RestRequest.php';
+		include_once Config::get('app.rest.request');
 		$this->request = new RestRequest();
 		$urlElements = $this->request->getUrlElements();
 		echo $this->dispatch($this->processParams($urlElements));
 	}
 
-	private function processParams(array &$urlParams, $previousReturnValue = null) {
+	/*
+	 * Here happens the magic.
+	 * With the given parameters it initializes the demanded controller and calls the method for getting the result.
+	 * The requests are chainable. If chained the result of the first controller will be given to the second one, etc.
+	 *
+	 * @param array $urlParams the url parameters from the request. containing data or information about what is requested
+	 * @param $previousvalue if request was chained this is the result of the previous processing
+	 * @return returns the result of the processing through the controllers
+	 */
+	private function processParams(array &$urlParams, $previousValue = null) {
 		// controller
-		$controllerName = self::DEFAULT_CONTROLLER;
+		$controllerName = Config::get('app.defaultcontroller');
 		if (isset($urlParams[0])) {
 			$controllerName = $urlParams[0];
 		}
-		$controllerClassName = $this->getControllerClassName($controllerName);
+		$controllerClassName = Helper::getFullClassNameController($controllerName);
 		try {
 			$this->controller = new $controllerClassName();
 			$this->controller->setRequest($this->request);
 		} catch (\Exception $e) {
 			if ($e instanceof \ClassNotFoundException) {
-				throw new \exception\ControllerNotFoundException($e->getMessage());
+				throw new ControllerNotFoundException($e->getMessage());
 			} else {
 				throw $e;
 			}
 		}
 
-		// method
-		if (count($urlParams) > 2) {
-			$controllerMethod = self::DEFAULT_METHOD;
-		} else {
-			$controllerMethod = strtolower($this->request->getVerb());
+		// method method
+		$methodMethod = null;
+		if (method_exists($this->controller, self::METHOD_METHOD)) {
+			$methodMethod = self::METHOD_METHOD;
 		}
 
+		// method
+		if (count($urlParams) > 2) {
+			$method = self::DEFAULT_METHOD;
+		} else {
+			$method = strtolower($this->request->getVerb());
+		}
 		// param
-		$controllerMethodParam = null;
+		$methodParam = null;
 		if (isset($urlParams[1])) {
-			$controllerMethodParam = $urlParams[1];
+			$methodParam = $urlParams[1];
 		}
 		// process
 		$returnValue = null;
-		if (method_exists($this->controller, $controllerMethod)) {
-			switch ($controllerMethod) {
-				case self::METHOD_GET:
-				case self::METHOD_DELETE:
-					if (!empty($previousReturnValue)) {
-						$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $previousReturnValue);
-					} else {
-						$returnValue = $this->controller->$controllerMethod($controllerMethodParam);
-					}
-					break;
-				case self::METHOD_POST:
-					$bodyParams = $this->request->getParameters();
-					if (!empty($previousReturnValue)) {
-						if (!empty($bodyParams)) {
-							$returnValue = $this->controller->$controllerMethod($previousReturnValue, $bodyParams);
-						} else {
-							$returnValue = $this->controller->$controllerMethod($previousReturnValue);
-						}
-					} else {
-						if (!empty($bodyParams)) {
-							$returnValue = $this->controller->$controllerMethod($bodyParams);
-						} else {
-							$returnValue = $this->controller->$controllerMethod();
-						}
-					}
-					break;
-				case self::METHOD_PUT:
-				case self::METHOD_PATCH:
-				default:
-					$bodyParams = $this->request->getParameters();
-					if (!empty($previousReturnValue)) {
-						if (!empty($bodyParams)) {
-							$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $previousReturnValue, $bodyParams);
-						} else {
-							$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $previousReturnValue);
-						}
-					} else {
-						if (!empty($bodyParams)) {
-							$returnValue = $this->controller->$controllerMethod($controllerMethodParam, $bodyParams);
-						} else {
-							$returnValue = $this->controller->$controllerMethod($controllerMethodParam);
-						}
-					}
-					break;
-			}
+		if (method_exists($this->controller, $methodMethod)) {
+			$data = $this->request->getParameters();
+			$returnValue = $this->controller->$methodMethod($method, $methodParam, $data, $previousValue);
 		} else {
-			throw new \exception\ClassMethodNotFoundException($this->controller, $controllerMethod);
+			throw new ClassMethodNotFoundException($this->controller, $methodMethod);
 		}
 
 		// prepare for next loop
@@ -121,22 +102,32 @@ class Rest {
 		return $returnValue;
 	}
 
+	/*
+	 * This method decides if a view has to be rendered or not.
+	 * It can detect a cli call and returns the result not formatted.
+	 * If an AJAX request has been made the result will be return formatted as JSON.
+	 *
+	 * @param $value the result to dispatch
+	 * @return returns formatted or raw result
+	 */
 	private function dispatch($value = null) {
 		$returnValue = null;
-		if (Helper::isAjaxRequest()) {
-			$returnValue = $this->formatJson($value);
-		} else {
-			if (is_null($value)) {
-				$this->controller->renderView();
+		if (!Helper::isCliCall()) {
+			if (Helper::isAjaxRequest()) {
+				$returnValue = $this->formatJson($value);
 			} else {
-				$returnValue = $this->formatValue($value);
+				if (!Config::get('app.view.default.render') || $this->wantFormat()) {
+					$returnValue = $this->formatValue($value);
+				} else {
+					$this->controller->renderView();
+				}
 			}
 		}
 		return $returnValue;
 	}
 
-	private function formatValue(&$value) {
-		$format = self::DEFAULT_FORMAT;
+	private function getFormat() {
+		$format = null;
 		if (isset($_REQUEST['format']) && in_array($_REQUEST['format'], $this->formats)) {
 			$format = $_REQUEST['format'];
 		} else {
@@ -146,6 +137,16 @@ class Rest {
 				}
 			}
 		}
+		return $format;
+	}
+
+	private function wantFormat() {
+		return is_null($this->getFormat()) ? false : true;
+	}
+
+	private function formatValue(&$value) {
+		$setFormat = $this->getFormat();
+		$format = is_null($setFormat) ? Config::get('app.view.default.format') : $setFormat;
 		switch ($format) {
 			case self::FORMAT_XML:
 				$this->formatXml($value);
@@ -159,16 +160,15 @@ class Rest {
 	}
 
 	private function formatJson(&$value) {
+		if (is_array($value) || is_object($value)) {
+			$value = json_encode($value);
+		}
 		header('Content-Type: application/json');
-		return $value = json_encode($value);
+		return $value;
 	}
 
 	private function formatXml(&$value) {
 		header('Content-Type: text/xml');
 		return $value = 'XML not yet supported.<br />'.print_r($value, true);
-	}
-
-	private function getControllerClassName($controller) {
-		return self::CONTROLLER_PREFIX.ucfirst($controller);
 	}
 }

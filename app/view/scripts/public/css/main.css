@@ -1,0 +1,42 @@
+/* general */
+body {
+	font-family: "Open Sans", sans-serif;
+}
+
+/* links */
+a {
+	font-weight: normal;
+	color: #aaa;
+	text-decoration: none;
+	border-bottom: 2px solid #333;
+}
+
+a:hover {
+	color: orange;
+}
+
+.errors {
+	color: red;
+}
+
+.footer {
+	position: absolute;
+	bottom: 0px;
+}
+
+.copyright {
+	font-size: 70%;
+	color: #B4B4B4;
+}
+
+.form-register {
+	width: 150px;
+}
+
+.form-register * {
+	width: 100%;
+}
+
+#userinfo {
+	font-family: monospace;
+}

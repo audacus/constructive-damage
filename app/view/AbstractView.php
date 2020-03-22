@@ -2,34 +2,31 @@
 
 namespace view;
 
-use \Helper;
 use \Config;
-use controller\AbstractController;
+use \Helper;
 
 abstract class AbstractView {
 
-	const SCRIPTS_PATH = 'scripts';
-	const DEFAULT_CSS_SCRIPTS_FOLDER = 'css';
-	const DEFAULT_JS_SCRIPTS_FOLDER = 'js';
-	const DEFAULT_SCRIPT_CONTENT = 'content.php';
-	const DEFAULT_SCRIPT_HEADER = 'header.php';
-	const DEFAULT_SCRIPT_FOOTER = 'footer.php';
+	const FILE_ENDING_CSS = 'css';
+	const FILE_ENDING_JS = 'js';
+	const SCRIPT_HEADER = 'header';
+	const SCRIPT_CONTENT = 'content';
+	const SCRIPT_FOOTER = 'footer';
 
-	protected $config;
 	protected $header;
 	protected $content;
 	protected $footer;
-	protected $data;
+	protected $data = array();
+	protected $error = array();
 	protected $cssFiles;
 	protected $jsFiles;
 
-	public function __construct() {
-		$this->config = Config::parseConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH);
-		$this->header = $this->setHeader();
+	public function __construct($viewName = null) {
+		$this->header = $this->getHeader();
+		$this->content = $this->getContent($viewName);
 		$this->footer = $this->getFooter();
-		$this->content = $this->getContent();
-		$this->setCssFiles(array_merge($this->getDefaultCssFiles(), $this->getViewCssFiles()));
-		$this->setJsFiles(array_merge($this->getDefaultJsFiles(), $this->getViewJsFiles()));
+		$this->setCssFiles(array_merge($this->getDefaultCssFiles(), $this->getControllerViewCssFiles()));
+		$this->setJsFiles(array_merge($this->getDefaultJsFiles(), $this->getControllerViewJsFiles()));
 	}
 
 	public function getSiteContent() {
@@ -43,185 +40,256 @@ abstract class AbstractView {
 		return $siteContent;
 	}
 
-	public function getData() {
-		if (is_null($this->data)) {
-			$this->setData(array());
+	public function getData($key = null) {
+		$data = null;
+		if (empty($key)) {
+			$data = $this->data;
+		} else if (isset($this->data[$key])) {
+			$data = $this->data[$key];
 		}
-		return $this->data;
+		return $data;
 	}
 
 	public function setData($data) {
 		$this->data = $data;
-		return $this->getData();
+		return $this;
 	}
 
-	public function appendData($data) {
-		$this->getData();
-		array_push($this->data, $data);
-		return $this->getData();
+	public function appendData($key, $value = null) {
+		return $this->appendToVar('data', $key, $value);
 	}
 
-	protected function getCssFiles() {
+	public function getError() {
+		return $this->error;
+	}
+
+	public function setError($error) {
+		$this->error = $error;
+		return $this;
+	}
+
+	public function appendError($key, $value = null) {
+		return $this->appendToVar('error', $key, $value);
+	}
+
+	public function getCssFiles() {
 		if (is_null($this->cssFiles)) {
-			$this->setCssFiles(array());
+			$this->setCssFiles();
 		}
 		return $this->cssFiles;
 	}
 
-	protected function setCssFiles($cssFiles) {
+	public function setCssFiles(array $cssFiles = array()) {
 		$this->cssFiles = $cssFiles;
-		return $this->getCssFiles();
+		return $this;
 	}
 
-	protected function appendCssFile($cssFile) {
-		$this->getCssFiles();
-		array_push($this->cssFiles, $cssFiles);
-		return $this->getCssFiles();
-	}
-
-	protected function appendCssFiles($cssFiles) {
-		foreach ($cssFiles as $cssFile) {
-			$this->appendCssFile($cssFile);
+	public function pendFile($fileEnding, $folder, $file, $appendBaseUrl = true, $prepend = false) {
+		if ($appendBaseUrl) {
+			$parts = array(
+				Config::get('app.url.base'),
+				$folder,
+				$file
+			);
+			$file = Helper::makePathFromParts($parts);
 		}
-		return $this->getCssFiles();
+		$files = strtolower($fileEnding).'Files';
+		if (empty($this->$files)) {
+			$this->$files = array();
+		}
+		$temp = $this->$files;
+		if ($prepend) {
+			array_unshift($temp, $file);
+		} else {
+			array_push($temp, $file);
+		}
+		$this->$files = $temp;
+		return $this;
 	}
 
-	protected function getJsFiles() {
+	public function appendCssFile($cssFile, $appendBaseUrl = true) {
+		return $this->pendCssFile($cssFile, $appendBaseUrl, false);
+	}
+
+	public function prependCssFile($cssFile, $appendBaseUrl = true) {
+		return $this->pendCssFile($cssFile, $appendBaseUrl, true);
+	}
+
+	public function pendCssFile($cssFile, $appendBaseUrl = true, $prepend) {
+		return $this->pendFile(self::FILE_ENDING_CSS, Config::get('app.url.css.default'), $jsFile, $appendBaseUrl, $prepend);
+	}
+
+	public function appendCssFiles(array $cssFiles, $appendBaseUrl = true) {
+		foreach ($cssFiles as $cssFile) {
+			$this->appendCssFile($cssFile, $appendBaseUrl);
+		}
+		return $this;
+	}
+
+	public function getJsFiles() {
 		if (is_null($this->jsFiles)) {
 			$this->setJsFiles(array());
 		}
 		return $this->jsFiles;
 	}
 
-	protected function setJsFiles($jsFiles) {
+	public function setJsFiles(array $jsFiles = array()) {
 		$this->jsFiles = $jsFiles;
-		return $this->getJsFiles();
+		return $this;
 	}
 
-	protected function appendJsFile($jsFile) {
-		$this->getJsFiles();
-		array_push($this->jsFiles, $jsFiles);
-		return $this->getJsFiles();
+	public function appendJsFile($jsFile, $appendBaseUrl = true) {
+		return $this->pendJsFile($jsFile, $appendBaseUrl, false);
 	}
 
-	protected function appendJsFiles($jsFiles) {
+	public function prependJsFile($jsFile, $appendBaseUrl = true) {
+		return $this->pendJsFile($jsFile, $appendBaseUrl, true);
+	}
+
+	public function pendJsFile($jsFile, $appendBaseUrl = true, $prepend) {
+		return $this->pendFile(self::FILE_ENDING_JS, Config::get('app.url.js.default'), $jsFile, $appendBaseUrl, $prepend);
+	}
+
+	public function appendJsFiles(array $jsFiles, $appendBaseUrl = true) {
 		foreach ($jsFiles as $jsFile) {
-			$this->appendJsFile($jsFile);
+			$this->appendJsFile($jsFile, $appendBaseUrl);
 		}
-		return $this->getJsFiles();
+		return $this;
+	}
+
+	public function appendToVar($variable, $key, $value = null) {
+		if (empty($this->$variable)) {
+			$this->$variable = array();
+		}
+		$variableTemp = $this->$variable;
+		if (empty($value)) {
+			$value = $key;
+			if (Helper::isIterable($value)) {
+				if (!is_array($value)) {
+					$value = iterator_to_array($value);
+				}
+				array_merge($variableTemp, $value);
+			} else {
+				array_push($variableTemp, $value);
+			}
+		} else {
+			$variableTemp[$key] = $value;
+		}
+		$this->$variable = $variableTemp;
+		return $this;
+	}
+
+	public function setHeader($file = null) {
+		return $this->setScript(self::SCRIPT_HEADER, $file);
+	}
+
+	public function setContent($file = null) {
+		return $this->setScript(self::SCRIPT_CONTENT, $file);
+	}
+
+	public function setFooter($file = null) {
+		return $this->setScript(self::SCRIPT_FOOTER, $file);
+	}
+
+	public function getCssPath() {
+		return $this->getScriptsPath(self::FILE_ENDING_CSS);
+	}
+
+	public function getJsPath() {
+		return $this->getScriptsPath(self::FILE_ENDING_JS);
+	}
+
+	private function getScript($script = null, $pathScripts = null, $filename = null, $prependApplicationPath = true) {
+		$file = null;
+		if (empty($this->$script) && !empty($script)) {
+			$scriptPathParts = array(
+				APPLICATION_PATH,
+				empty($pathScripts) ? Config::get('app.path.viewscripts.scripts') : $pathScripts,
+				empty($filename) ? Config::get('app.path.viewscripts.'.$script) : $filename
+			);
+			if (!$prependApplicationPath) {
+				array_shift($scriptPathParts);
+			}
+			$file = new \SplFileInfo(Helper::makePathFromParts($scriptPathParts));
+		} else if (!empty($this->$script)) {
+			$file = $this->$script;
+		}
+		return $file;
 	}
 
 	private function getHeader() {
-		if (empty($this->header)) {
-			$headerPathParts = array(
-				dirname(__FILE__),
-				self::SCRIPTS_PATH,
-				self::DEFAULT_SCRIPT_HEADER
-			);
-			$this->header = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $headerPathParts));
-		}
-		return $this->header;
+		return $this->getScript(self::SCRIPT_HEADER);
 	}
 
-	private function setHeader($header = null) {
-		if (empty($header) && empty($this->header)) {
-			$this->getHeader();
-		} else {
-			if ($header instanceof \SplFileInfo) {
-				$this->header = $header;
-			} else if (is_string($header)) {
-				$this->header = new \SplFileInfo($header);
-			}
-		}
-		return $this->header;
+	private function getContent($viewName = null) {
+		return $this->getScript(self::SCRIPT_CONTENT, sprintf(
+				Config::get('app.path.viewscripts.controller'),
+				empty($viewName) ? Helper::getLowerCaseClassName($this) : $viewName));
 	}
 
 	private function getFooter() {
-		if (empty($this->footer)) {
-			$footerPathParts = array(
-				dirname(__FILE__),
-				self::SCRIPTS_PATH,
-				self::DEFAULT_SCRIPT_FOOTER
-			);
-			$this->footer = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $footerPathParts));
-		}
-		return $this->footer;
+		return $this->getScript(self::SCRIPT_FOOTER);
 	}
 
-	private function setFooter($footer = null) {
-		if (empty($footer) && empty($this->footer)) {
-			$this->getFooter();
+	private function setScript($script, $file = null) {
+		if (empty($file) && empty($this->$script)) {
+			$this->$script = $this->getScript($script);
 		} else {
-			if ($footer instanceof \SplFileInfo) {
-				$this->footer = $footer;
-			} else if (is_string($footer)) {
-				$this->footer = new \SplFileInfo($footer);
+			if ($file instanceof \SplFileInfo) {
+				$this->$script = $script;
+			} else if (is_string($file)) {
+				$this->$script = new \SplFileInfo($file);
 			}
 		}
-		return $this->footer;
+		return $this;
 	}
 
-	private function getContent() {
-		if (empty($this->content)) {
-			$contentPathParts = array(
-				dirname(__FILE__),
-				self::SCRIPTS_PATH,
-				Helper::getLowerCaseClassName($this),
-				self::DEFAULT_SCRIPT_CONTENT
-			);
-			$this->content = new \SplFileInfo(implode(DIRECTORY_SEPARATOR, $contentPathParts));
-		}
-		return $this->content;
-	}
-
-	private function setContent($footer = null) {
-		if (empty($footer) && empty($this->footer)) {
-			$this->getContent();
-		} else {
-			if ($footer instanceof \SplFileInfo) {
-				$this->footer = $footer;
-			} else if (is_string($footer)) {
-				$this->footer = new \SplFileInfo($footer);
-			}
-		}
-		return $this->footer;
-	}
-
-	private function getDefaultFiles($folder, $fileEnding = null) {
-		$defaultFilesPathParts = array(
-			dirname(__FILE__),
-			self::SCRIPTS_PATH,
-			$folder,
-			'*.'.(empty($fileEnding) ? $folder : $fileEnding)
+	private function getScriptsPath($fileEnding, $print = false) {
+		$parts = array(
+			APPLICATION_PATH,
+			Config::get('app.path.public'),
+			sprintf(Config::get('app.url.'.$fileEnding.'.controller'), Helper::getLowerCaseClassName($this))
 		);
-		return Helper::getRelativePaths(glob(implode(DIRECTORY_SEPARATOR, $defaultFilesPathParts)));
+		$path = Helper::getRelativePath(Helper::makePathFromParts($parts));
+		if ($print) {
+			echo $path;
+		}
+		return $path;
+	}
+
+	private function getDefaultFiles($folder, $fileEnding = '') {
+		$defaultFilesPathParts = array(
+			APPLICATION_PATH,
+			Config::get('app.path.public'),
+			$folder,
+			'*.'.$fileEnding
+		);
+		return Helper::getRelativePaths(glob(Helper::makePathFromParts($defaultFilesPathParts)));
 	}
 
 	private function getDefaultCssFiles() {
-		return $this->getDefaultFiles(self::DEFAULT_CSS_SCRIPTS_FOLDER);
+		return $this->getDefaultFiles(Config::get('app.url.css.default'), self::FILE_ENDING_CSS);
 	}
 
 	private function getDefaultJsFiles() {
-		return $this->getDefaultFiles(self::DEFAULT_JS_SCRIPTS_FOLDER);
+		return $this->getDefaultFiles(Config::get('app.url.js.default'), self::FILE_ENDING_JS);
 	}
 
-	private function getViewFiles($folder, $fileEnding = null) {
+	private function getControllerViewFiles($folder, $fileEnding = '', $viewName = '') {
 		$viewFilesPathParts = array(
-			dirname(__FILE__),
-			self::SCRIPTS_PATH,
-			Helper::getLowerCaseClassName($this),
-			$folder,
-			'*.'.(empty($fileEnding) ? $folder : $fileEnding)
+			APPLICATION_PATH,
+			Config::get('app.path.public'),
+			sprintf($folder, empty($viewName) ? Helper::getLowerCaseClassName($this) : $viewName),
+			'[!_]*.'.$fileEnding
 		);
-		return Helper::getRelativePaths(glob(implode(DIRECTORY_SEPARATOR, $viewFilesPathParts)));
-
+		return Helper::getRelativePaths(glob(Helper::makePathFromParts($viewFilesPathParts)));
 	}
 
-	private function getViewCssFiles() {
-		return $this->getViewFiles(self::DEFAULT_CSS_SCRIPTS_FOLDER);
+	private function getControllerViewCssFiles($viewName = '') {
+		return $this->getControllerViewFiles(Config::get('app.url.css.controller'), self::FILE_ENDING_CSS, $viewName);
 	}
 
-	private function getViewJsFiles() {
-		return $this->getViewFiles(self::DEFAULT_JS_SCRIPTS_FOLDER);
+	private function getControllerViewJsFiles($viewName = '') {
+		return $this->getControllerViewFiles(Config::get('app.url.js.controller'), self::FILE_ENDING_JS, $viewName);
 	}
 }
