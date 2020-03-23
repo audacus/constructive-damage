@@ -9,10 +9,6 @@
 			"name": "constructive damage",
 			"address": "noreply@constructivedamage.xyz"
 		},
-		"url": {
-			"host": "constructivedamage.xyz",
-			"base": "/cd"
-		},
 		"lua": {
 			"filepath": "lib/lua",
 			"avatarscript": "object_n_1"
@@ -24,10 +20,10 @@
 	"db": {
 		"host": "localhost",
 		"user": "root",
-		"password": "this1sVeryRandom",
+		"password": "password",
 		"name": "constructive_damage",
 		"pdo": {
-			"type": "mysql"
+			"type": "sqlite"
 		}
 	}
 }

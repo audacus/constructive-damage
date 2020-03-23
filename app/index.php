@@ -1,39 +1,58 @@
 <?php
-
+global $cli;
+if (!isset($cli) || !$cli) {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Headers: X-Requested-With');
+}
 if (!defined('APPLICATION_PATH')) {
-	define('APPLICATION_PATH', realpath(dirname(__FILE__)));
+    define('APPLICATION_PATH', realpath(dirname(__FILE__)));
 }
 
 if (!defined('DEFAULT_CONFIG_PATH')) {
-	define('DEFAULT_CONFIG_PATH', APPLICATION_PATH.'/config/default/application.json');
+    define('DEFAULT_CONFIG_PATH', APPLICATION_PATH.'/config/default/application.json');
 }
 
 if (!defined('CONFIG_PATH')) {
-	define('CONFIG_PATH', APPLICATION_PATH.'/config/application.json');
+    define('CONFIG_PATH', APPLICATION_PATH.'/config/application.json');
 }
 
-// add lib folder to include path
-set_include_path(implode(PATH_SEPARATOR, array(
-	realpath(APPLICATION_PATH.'/lib'),
-	get_include_path()
-)));
+// add require composer autoload
+require APPLICATION_PATH.'/../vendor/autoload.php';
+
+// require and initialize config
+try {
+    require_once APPLICATION_PATH.'/lib/Config.php';
+    Config::parseAndSetConfig(DEFAULT_CONFIG_PATH, CONFIG_PATH);
+} catch (\Exception $e) {
+    die($e->getMessage());
+}
 
 // include all files in the lib folder
-foreach (glob('lib/*.php') as $filename) {
-	include $filename;
+$pathPartsLib = array(
+    APPLICATION_PATH,
+    Config::get('app.path.lib'),
+    '*.php'
+);
+foreach (glob(implode(DIRECTORY_SEPARATOR, $pathPartsLib)) as $lib) {
+    include_once $lib;
+}
+
+// include all exceptions
+$pathPartsException = array(
+    APPLICATION_PATH,
+    Config::get('app.path.exception'),
+    '*.php'
+);
+foreach (glob(Helper::makePathFromParts($pathPartsException)) as $exception) {
+    include_once $exception;
 }
 
 // initialize autoloader
-require 'php-autoloader/Autoloader.php';
-spl_autoload_register(array('Autoloader', 'load'));
+spl_autoload_register(array(Config::get('app.autoloader.class'), Config::get('app.autoloader.function')));
 
 // initialize error controller
-require 'php-error-handler/ErrorHandler.php';
-set_error_handler('controller\ErrorController::error');
-set_exception_handler('controller\ErrorController::exception');
-
-// require NotORM
-require 'notorm/NotORM.php';
+set_error_handler(Config::get('app.errorhandler.errorfunction'));
+set_exception_handler(Config::get('app.errorhandler.exceptionfunction'));
 
 // start application
 new App();

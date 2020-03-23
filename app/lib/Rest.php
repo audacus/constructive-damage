@@ -35,7 +35,6 @@ class Rest {
 	 */
 	public function __construct() {
 		// include RestRequest
-		include_once Config::get('app.rest.request');
 		$this->request = new RestRequest();
 		$urlElements = $this->request->getUrlElements();
 		echo $this->dispatch($this->processParams($urlElements));

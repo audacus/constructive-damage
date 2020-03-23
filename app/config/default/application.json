@@ -55,21 +55,10 @@
 				"footer": "footer.php"
 			}
 		},
-		"exception": {
-			"file": "php-exception/AbstractException.php"
-		},
 		"autoloader": {
-			"file": "php-autoloader/Autoloader.php",
+			"file": "Autoloader.php",
 			"class": "Autoloader",
 			"function": "load"
-		},
-		"errorhandler": {
-			"file": "php-error-handler/ErrorHandler.php",
-			"errorfunction": "controller\\Error::error",
-			"exceptionfunction": "controller\\Error::exception"
-		},
-		"rest": {
-			"request": "php-rest-api/RestRequest.php"
 		},
 		"view": {
 			"default": {
@@ -81,8 +70,8 @@
 	"db": {
 		"host": "localhost",
 		"user": "root",
-		"password": "",
-		"name": "",
+		"password": "password",
+		"name": "database",
 		"filepath": "lib/database",
 		"pdo": {
 			"type": "mysql"
